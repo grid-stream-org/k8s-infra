@@ -1,0 +1,44 @@
+# name: deploy
+# on:
+#   push:
+#     branches: [ main ]
+#     paths:
+#       - 'versions.yaml'
+#       - 'k8s/**'
+
+# jobs:
+#   deploy:
+#     name: deploy
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v4
+
+#       - name: Install yq
+#         run: |
+#           sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+#           sudo chmod +x /usr/local/bin/yq
+
+#       - name: Authenticate to Google
+#         uses: "google-github-actions/auth@v2"
+#         with:
+#           credentials_json: "${{ secrets.GCP_SERVICE_ACC_KEY }}"
+
+#       - uses: "google-github-actions/setup-gcloud@v2"
+#         with:
+#           install_components: "gke-gcloud-auth-plugin"
+
+#       - name: Authenticate to GKE cluster
+#         uses: google-github-actions/get-gke-credentials@v2
+#         with:
+#           cluster_name: ${{ secrets.GCP_GKE_CLUSTER }}
+#           location: ${{ secrets.GCP_REGION }}
+
+#       - name: Deploy Batcher
+#         run: |
+#           VERSION=$(yq '.services.batcher.version' versions.yaml)
+#           kustomize build --load-restrictor=LoadRestrictionsNone k8s/batcher | kubectl apply -f -
+
+#       - name: Deploy Validator
+#         run: |
+#           VERSION=$(yq '.services.validator.version' versions.yaml)
+#           kustomize build --load-restrictor=LoadRestrictionsNone k8s/validator | kubectl apply -f -

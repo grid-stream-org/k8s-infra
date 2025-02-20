@@ -1,0 +1,27 @@
+name: ci
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Install kustomize
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          sudo mv kustomize /usr/local/bin/
+
+      - name: Validate Kubernetes manifests
+        run: |
+          kustomize build k8s/batcher | kubectl apply --dry-run=client -f -
+          kustomize build k8s/validator | kubectl apply --dry-run=client -f -
+
+      - name: Validate versions.yaml format
+        run: |
+          yq '.services' versions.yaml > /dev/null

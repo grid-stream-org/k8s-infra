@@ -1,0 +1,44 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: batcher
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: batcher
+  template:
+    metadata:
+      labels:
+        app: batcher
+    spec:
+      containers:
+      - name: batcher
+        image: us-docker.pkg.dev/grid-stream/gridstream/batcher
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "2"
+          limits:
+            memory: "512Mi"
+            cpu: "2"
+        env:
+        - name: GO_ENV
+          value: "production"
+        - name: CONFIG_PATH
+          value: "/etc/batcher/config.json"
+        volumeMounts:
+        - name: bigquery-creds
+          mountPath: "/secrets/bigquery"
+          readOnly: true
+        - name: batcher-config
+          mountPath: "/etc/batcher"
+          readOnly: true
+      volumes:
+      - name: bigquery-creds
+        secret:
+          secretName: bigquery-credentials
+      - name: batcher-config
+        secret:
+          secretName: batcher-config

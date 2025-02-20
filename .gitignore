@@ -1,0 +1,27 @@
+# IDE/Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Kubernetes/local development
+kubeconfig
+.kube/
+*.kubeconfig
+
+# Local environment files
+.env
+.env.*
+
+# Package managers (if you end up using any)
+node_modules/
+vendor/
+
+# Generated files
+*.generated.*

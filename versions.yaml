@@ -1,0 +1,5 @@
+services:
+  batcher:
+    stream: v1.2.3
+    dr_event: v1.2.3
+  validator: v1.2.3
