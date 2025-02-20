@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - deployment.yaml
+  - hpa.yaml
+
+images:
+  - name: us-docker.pkg.dev/grid-stream/gridstream/batcher
+    newTag: $(VERSION)
