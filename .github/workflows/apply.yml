@@ -1,4 +1,3 @@
-# .github/workflows/apply.yaml (renamed from deploy since we're applying manifests)
 name: apply-manifests
 on:
   push:
@@ -9,52 +8,62 @@ on:
 
 jobs:
   apply:
-    name: apply-manifests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
       - name: Install yq
         run: |
           sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
           sudo chmod +x /usr/local/bin/yq
 
-      - name: Authenticate to Google
-        uses: "google-github-actions/auth@v2"
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
         with:
           credentials_json: "${{ secrets.GCP_SERVICE_ACC_KEY }}"
 
-      - uses: "google-github-actions/setup-gcloud@v2"
+      - name: Setup gcloud and Auth Plugin
+        uses: google-github-actions/setup-gcloud@v2
         with:
           install_components: "gke-gcloud-auth-plugin"
 
-      - name: Authenticate to GKE cluster
+      - name: Get GKE Credentials
         uses: google-github-actions/get-gke-credentials@v2
         with:
           cluster_name: ${{ secrets.GCP_GKE_CLUSTER }}
           location: ${{ secrets.GCP_REGION }}
 
-      - name: Create Secrets
+      - name: Create Kubernetes Secrets
         run: |
-          gcloud secrets versions access latest --secret=CREDS_PATH_SECRET | kubectl create secret generic bigquery-credentials --from-file=credentials.json=/dev/stdin --dry-run=client -o yaml | kubectl apply -f -
-          gcloud secrets versions access latest --secret=BATCHER_STREAM_CONFIG_SECRET | kubectl create secret generic batcher-stream-config --from-file=config.json=/dev/stdin --dry-run=client -o yaml | kubectl apply -f -
+          gcloud secrets versions access latest --secret=CREDS_PATH_SECRET | \
+            kubectl create secret generic bigquery-credentials --from-file=credentials.json=/dev/stdin --dry-run=client -o yaml | kubectl apply -f -
+          gcloud secrets versions access latest --secret=BATCHER_STREAM_CONFIG_SECRET | \
+            kubectl create secret generic batcher-stream-config --from-file=config.json=/dev/stdin --dry-run=client -o yaml | kubectl apply -f -
+          gcloud secrets versions access latest --secret=BATCHER_CONFIG_SECRET | \
+            kubectl create secret generic batcher-config --from-file=config.json=/dev/stdin --dry-run=client -o yaml | kubectl apply -f -
 
-      - name: Apply All Manifests
+      - name: Update and Apply All Manifests
         run: |
-          export VERSION=$(yq '.services.batcher.stream' versions.yaml)
-          cd k8s/batcher/stream
+          set -e
+
+          echo "Applying Batcher Stream manifests..."
+          STREAM_VERSION=$(yq '.services.batcher.stream' versions.yaml)
+          pushd k8s/batcher/stream
+          kustomize edit set image us-docker.pkg.dev/grid-stream/gridstream/batcher:${STREAM_VERSION}
           kustomize build --load-restrictor=LoadRestrictionsNone . | kubectl apply -f -
-          cd ../..
+          popd
 
+          echo "Applying Batcher Event manifests..."
+          EVENT_VERSION=$(yq '.services.batcher.event' versions.yaml)
+          pushd k8s/batcher/event
+          kustomize edit set image us-docker.pkg.dev/grid-stream/gridstream/batcher-event:${EVENT_VERSION}
+          kustomize build --load-restrictor=LoadRestrictionsNone . | kubectl apply -f -
+          popd
 
-# TODO
-# gcloud secrets versions access latest --secret=BATCHER_CONFIG_SECRET | kubectl create secret generic batcher-config --from-file=config.json=/dev/stdin --dry-run=client -o yaml | kubectl apply -f -
-
-# export VERSION=$(yq '.services.batcher.event' versions.yaml)
-# cd k8s/batcher/event
-# kustomize build --load-restrictor=LoadRestrictionsNone . | kubectl apply -f -
-# cd ../..
-
-# export VERSION=$(yq '.services.validator' versions.yaml)
-# cd k8s/validator
-# kustomize build --load-restrictor=LoadRestrictionsNone . | kubectl apply -f -
+          echo "Applying Validator manifests..."
+          VALIDATOR_VERSION=$(yq '.services.validator' versions.yaml)
+          pushd k8s/validator
+          kustomize edit set image us-docker.pkg.dev/grid-stream/gridstream/validator:${VALIDATOR_VERSION}
+          kustomize build --load-restrictor=LoadRestrictionsNone . | kubectl apply -f -
+          popd
