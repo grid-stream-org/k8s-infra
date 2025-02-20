@@ -1,0 +1,44 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: theo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: theo
+  template:
+    metadata:
+      labels:
+        app: theo
+    spec:
+      containers:
+      - name: theo
+        image: us-docker.pkg.dev/grid-stream/gridstream/theo
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "0.25"
+          limits:
+            memory: "128Mi"
+            cpu: "0.25"
+        env:
+        - name: GO_ENV
+          value: "production"
+        - name: CONFIG_PATH
+          value: "/etc/theo/config.json"
+        volumeMounts:
+        - name: bigquery-creds
+          mountPath: "/secrets/bigquery"
+          readOnly: true
+        - name: theo-config
+          mountPath: "/etc/theo"
+          readOnly: true
+      volumes:
+      - name: bigquery-creds
+        secret:
+          secretName: bigquery-credentials
+      - name: theo-config
+        secret:
+          secretName: theo-config

@@ -3,3 +3,4 @@ services:
     stream: v0.6.0
     event: v0.6.0
   validator: v0.1.0
+  theo: v0.1.0
