@@ -42,4 +42,4 @@ jobs:
       - name: Update and Apply All Manifests
         run: |
           chmod +x scripts/apply.sh
-          scripts/apply.sh
+          scripts/apply.sh "${{ github.event.before }}" "${{ github.sha }}"
