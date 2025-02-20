@@ -38,7 +38,6 @@ jobs:
         run: |
           gcloud secrets versions access latest --secret=CREDS_PATH_SECRET | kubectl create secret generic bigquery-credentials --from-file=credentials.json=/dev/stdin --dry-run=client -o yaml | kubectl apply -f -
           gcloud secrets versions access latest --secret=BATCHER_STREAM_CONFIG_SECRET | kubectl create secret generic batcher-stream-config --from-file=config.json=/dev/stdin --dry-run=client -o yaml | kubectl apply -f -
-          gcloud secrets versions access latest --secret=BATCHER_CONFIG_SECRET | kubectl create secret generic batcher-config --from-file=config.json=/dev/stdin --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Apply All Manifests
         run: |
@@ -47,12 +46,15 @@ jobs:
           kustomize build --load-restrictor=LoadRestrictionsNone . | kubectl apply -f -
           cd ../..
 
-          export VERSION=$(yq '.services.batcher.event' versions.yaml)
-          cd k8s/batcher/event
-          kustomize build --load-restrictor=LoadRestrictionsNone . | kubectl apply -f -
-          cd ../..
 
-          # Validator
-          export VERSION=$(yq '.services.validator' versions.yaml)
-          cd k8s/validator
-          kustomize build --load-restrictor=LoadRestrictionsNone . | kubectl apply -f -
+# TODO
+# gcloud secrets versions access latest --secret=BATCHER_CONFIG_SECRET | kubectl create secret generic batcher-config --from-file=config.json=/dev/stdin --dry-run=client -o yaml | kubectl apply -f -
+
+# export VERSION=$(yq '.services.batcher.event' versions.yaml)
+# cd k8s/batcher/event
+# kustomize build --load-restrictor=LoadRestrictionsNone . | kubectl apply -f -
+# cd ../..
+
+# export VERSION=$(yq '.services.validator' versions.yaml)
+# cd k8s/validator
+# kustomize build --load-restrictor=LoadRestrictionsNone . | kubectl apply -f -
