@@ -36,12 +36,19 @@ jobs:
 
       - name: Create Kubernetes Secrets
         run: |
-          gcloud secrets versions access latest --secret=CREDS_PATH_SECRET | \
-            kubectl create secret generic bigquery-credentials --from-file=credentials.json=/dev/stdin --dry-run=client -o yaml | kubectl apply -f -
-          gcloud secrets versions access latest --secret=BATCHER_STREAM_CONFIG_SECRET | \
-            kubectl create secret generic batcher-stream-config --from-file=config.json=/dev/stdin --dry-run=client -o yaml | kubectl apply -f -
-# gcloud secrets versions access latest --secret=BATCHER_CONFIG_SECRET | \
-#   kubectl create secret generic batcher-config --from-file=config.json=/dev/stdin --dry-run=client -o yaml | kubectl apply -f -
+          gcloud secrets versions access latest --secret=CREDS_PATH_SECRET \
+            | kubectl create secret generic bigquery-credentials \
+              -n gridstream-operations \
+              --from-file=credentials.json=/dev/stdin \
+              --dry-run=client -o yaml \
+            | kubectl apply -n gridstream-operations -f -
+            
+          gcloud secrets versions access latest --secret=BATCHER_STREAM_CONFIG_SECRET \
+            | kubectl create secret generic batcher-stream-config \
+            -n gridstream-operations \
+            --from-file=config.json=/dev/stdin \
+            --dry-run=client -o yaml \
+            | kubectl apply -n gridstream-operations -f -
 
       - name: Update and Apply All Manifests
         run: |
