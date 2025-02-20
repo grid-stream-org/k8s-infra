@@ -7,4 +7,4 @@ resources:
 
 images:
   - name: us-docker.pkg.dev/grid-stream/gridstream/validator
-    newTag: $(VERSION)
+    newTag: ${VERSION}
