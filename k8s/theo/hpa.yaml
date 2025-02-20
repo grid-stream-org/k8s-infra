@@ -2,12 +2,12 @@
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: batcher
+  name: theo
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: batcher
+    name: theo
   minReplicas: 1
   maxReplicas: 3
   metrics:
@@ -16,10 +16,10 @@ spec:
       name: cpu
       target:
         type: Utilization
-        averageUtilization: 70
+        averageUtilization: 80
   - type: Resource
     resource:
       name: memory
       target:
         type: Utilization
-        averageUtilization: 70
+        averageUtilization: 80
