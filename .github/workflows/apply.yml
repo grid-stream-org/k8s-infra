@@ -40,30 +40,10 @@ jobs:
             kubectl create secret generic bigquery-credentials --from-file=credentials.json=/dev/stdin --dry-run=client -o yaml | kubectl apply -f -
           gcloud secrets versions access latest --secret=BATCHER_STREAM_CONFIG_SECRET | \
             kubectl create secret generic batcher-stream-config --from-file=config.json=/dev/stdin --dry-run=client -o yaml | kubectl apply -f -
-          gcloud secrets versions access latest --secret=BATCHER_CONFIG_SECRET | \
-            kubectl create secret generic batcher-config --from-file=config.json=/dev/stdin --dry-run=client -o yaml | kubectl apply -f -
+# gcloud secrets versions access latest --secret=BATCHER_CONFIG_SECRET | \
+#   kubectl create secret generic batcher-config --from-file=config.json=/dev/stdin --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Update and Apply All Manifests
         run: |
-          set -e
-
-          echo "Applying Batcher Stream manifests..."
-          STREAM_VERSION=$(yq '.services.batcher.stream' versions.yaml)
-          pushd k8s/batcher/stream
-          kustomize edit set image us-docker.pkg.dev/grid-stream/gridstream/batcher:${STREAM_VERSION}
-          kustomize build --load-restrictor=LoadRestrictionsNone . | kubectl apply -f -
-          popd
-
-          echo "Applying Batcher Event manifests..."
-          EVENT_VERSION=$(yq '.services.batcher.event' versions.yaml)
-          pushd k8s/batcher/event
-          kustomize edit set image us-docker.pkg.dev/grid-stream/gridstream/batcher-event:${EVENT_VERSION}
-          kustomize build --load-restrictor=LoadRestrictionsNone . | kubectl apply -f -
-          popd
-
-          echo "Applying Validator manifests..."
-          VALIDATOR_VERSION=$(yq '.services.validator' versions.yaml)
-          pushd k8s/validator
-          kustomize edit set image us-docker.pkg.dev/grid-stream/gridstream/validator:${VALIDATOR_VERSION}
-          kustomize build --load-restrictor=LoadRestrictionsNone . | kubectl apply -f -
-          popd
+          chmod +x scripts/apply.sh
+          scripts/apply.sh
