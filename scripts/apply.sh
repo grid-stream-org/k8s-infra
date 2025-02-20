@@ -14,6 +14,6 @@ for entry in "${services[@]}"; do
   echo "Applying manifests for ${dir} with image ${image}:${version}"
   pushd "$dir" > /dev/null
   kustomize edit set image "${image}:${version}"
-  kustomize build --load-restrictor=LoadRestrictionsNone . | kubectl apply -f -
+  kustomize build --load-restrictor=LoadRestrictionsNone . | kubectl apply -n gridstream-operations -f -
   popd > /dev/null
 done
