@@ -1,0 +1,46 @@
+name: validate
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Install kustomize
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          sudo mv kustomize /usr/local/bin/
+
+      - name: Install yq
+        run: |
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      - name: Validate Kubernetes manifests
+        run: |
+          export VERSION=$(yq '.services.batcher.stream' versions.yaml)
+          cd k8s/batcher/stream
+          kustomize build --load-restrictor=LoadRestrictionsNone . | kubectl apply --dry-run=client -f -
+          cd ../..
+
+          export VERSION=$(yq '.services.batcher.event' versions.yaml)
+          cd k8s/batcher/event
+          kustomize build --load-restrictor=LoadRestrictionsNone . | kubectl apply --dry-run=client -f -
+          cd ../..
+
+          export VERSION=$(yq '.services.validator' versions.yaml)
+          cd k8s/validator
+          kustomize build --load-restrictor=LoadRestrictionsNone . | kubectl apply --dry-run=client -f -
+
+      - name: Validate versions.yaml structure
+        run: |
+          # Check required fields exist
+          test "$(yq '.services.batcher.stream' versions.yaml)" != "null" || (echo "batcher.stream version missing" && exit 1)
+          test "$(yq '.services.batcher.event' versions.yaml)" != "null" || (echo "batcher.event version missing" && exit 1)
+          test "$(yq '.services.validator' versions.yaml)" != "null" || (echo "validator version missing" && exit 1)
