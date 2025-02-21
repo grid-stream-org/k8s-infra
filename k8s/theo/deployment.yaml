@@ -13,6 +13,7 @@ spec:
       labels:
         app: theo
     spec:
+      serviceAccountName: theo 
       containers:
       - name: theo
         image: us-docker.pkg.dev/grid-stream/gridstream/theo
