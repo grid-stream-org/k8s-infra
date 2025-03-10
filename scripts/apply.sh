@@ -17,7 +17,8 @@ services=(
 )
 
 for entry in "${services[@]}"; do
-    read -r dir image versionQuery key <<< "$entry"
+    read -r dir image versionQuery <<< "$entry"
+    key=$(echo "$versionQuery" | sed 's/^\.//')
     # Only process if the service key appears in the diff
     if echo "$changed_keys" | grep -q "$key"; then
         version=$(yq "$versionQuery" versions.yaml)
