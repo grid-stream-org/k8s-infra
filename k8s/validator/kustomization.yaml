@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - deployment.yaml
   - hpa.yaml
+  - service.yaml
 
 images:
   - name: us-docker.pkg.dev/grid-stream/gridstream/validator
