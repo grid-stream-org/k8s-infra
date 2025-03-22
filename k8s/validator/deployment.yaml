@@ -1,0 +1,48 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: validator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: validator
+  template:
+    metadata:
+      labels:
+        app: validator
+    spec:
+      containers:
+        - name: validator
+          image: us-docker.pkg.dev/grid-stream/gridstream/validator
+          ports:
+            - containerPort: 50051
+              name: grpc
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "0.25"
+            limits:
+              memory: "128Mi"
+              cpu: "0.25"
+          env:
+            - name: GO_ENV
+              value: "production"
+            - name: CONFIG_PATH
+              value: "/etc/validator/config.json"
+          volumeMounts:
+            - name: validator-config
+              mountPath: "/etc/validator"
+              readOnly: true
+            - name: firebase-creds
+              mountPath: "/secrets/firebase"
+              readOnly: true
+      volumes:
+        - name: validator-config
+          secret:
+            secretName: validator-config
+        - name: firebase-creds
+          secret:
+            secretName: firebase-credentials
+            

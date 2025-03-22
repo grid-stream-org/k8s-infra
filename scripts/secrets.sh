@@ -6,9 +6,11 @@ NAMESPACE="gridstream-operations"
 # Format: "<gcloud_secret_id> <k8s_secret_name> <file_key>"
 secrets=(
   "CREDS_PATH_SECRET bigquery-credentials credentials.json"
+  "FIREBASE_GOOGLE_CREDENTIAL_SECRET  firebase-credentials credentials.json"
   "BATCHER_STREAM_CONFIG_SECRET batcher-stream-config config.json"
   "BATCHER_CONFIG_SECRET batcher-config config.json"
   "THEO_CONFIG_SECRET theo-config config.json"
+  "VALIDATOR_CONFIG_SECRET validator-config config.json"
 )
 
 for entry in "${secrets[@]}"; do

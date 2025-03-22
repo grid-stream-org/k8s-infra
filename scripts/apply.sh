@@ -36,7 +36,7 @@ declare -A services=(
   ["batcher.stream"]="k8s/batcher/stream us-docker.pkg.dev/grid-stream/gridstream/batcher services.batcher.stream" 
   ["batcher.event"]="k8s/batcher/event us-docker.pkg.dev/grid-stream/gridstream/batcher services.batcher.event"
   ["theo"]="k8s/theo us-docker.pkg.dev/grid-stream/gridstream/theo services.theo"
-  #["validator"]="k8s/validator us-docker.pkg.dev/grid-stream/gridstream/validator services.validator"
+  ["validator"]="k8s/validator us-docker.pkg.dev/grid-stream/gridstream/validator services.validator"
 )
 
 # Extract versions from both commits for each service and compare
