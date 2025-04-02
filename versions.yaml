@@ -2,5 +2,5 @@ services:
   batcher:
     stream: v0.9.3
     event: v0.9.3
-  validator: v0.3.3
+  validator: v0.3.4
   theo: v0.3.0
